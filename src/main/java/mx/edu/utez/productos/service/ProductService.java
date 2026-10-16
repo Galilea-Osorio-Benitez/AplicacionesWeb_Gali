@@ -2,17 +2,22 @@ package mx.edu.utez.productos.service;
 
 import mx.edu.utez.productos.model.Product;
 import mx.edu.utez.productos.repository.ProductRepository;
+
+import mx.edu.utez.productos.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import mx.edu.utez.productos.model.Category;;
 
 @Service 
 public class ProductService {
-    private ProductRepository repo;
+    private final ProductRepository repo;
+    private final CategoryRepository repoCategory;
 
-    public ProductService(ProductRepository repo){
+    public ProductService(ProductRepository repo, CategoryRepository repoCategory){
         this.repo = repo;
+        this.repoCategory = repoCategory;
     }
 
     public List<Product> getAll(){
@@ -23,8 +28,11 @@ public class ProductService {
         return repo.findById(id);
     }
 
-    public Product save(Product product){
-        return repo.save(product);
+    public Product save(Product product, Long categoryId){
+        Category category = repoCategory.findById(categoryId).orElseThrow();//Brujeria paira arrojar un error, cuando no encuentre un optional para categoty
+        //entonces arroja un error, evitando que el producto se cree
+        product.setCategory(category);
+        return repo.save(product); 
     }
 
     public Optional<Product> update(Long id, Product product){
