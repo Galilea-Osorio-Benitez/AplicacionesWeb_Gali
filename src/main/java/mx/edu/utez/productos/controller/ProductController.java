@@ -1,8 +1,10 @@
 package mx.edu.utez.productos.controller;
 
 import jakarta.validation.Valid;
+import mx.edu.utez.productos.dto.ProductCambioRequest;
 import mx.edu.utez.productos.dto.ProductRequest;
 import mx.edu.utez.productos.dto.ProductResponse;
+import mx.edu.utez.productos.exception.ResoureceNotFoundException;
 import mx.edu.utez.productos.model.Product;
 import mx.edu.utez.productos.service.ProductService;
 import org.springframework.http.HttpStatus;
@@ -38,12 +40,12 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getById(@PathVariable Long id){
-        Optional<Product> product = service.findById(id);//product es una entity y en este punto no es igual al Optional
-        if (product.isPresent()){
-            return ResponseEntity.ok(toResponse(product.get()));
-        }else {
-            return ResponseEntity.notFound().build();
-        }
+        Product product = service.findById(id).orElseThrow(
+            ()->
+            new ResoureceNotFoundException("Product not found with id: " +id)
+        );
+        //product es una entity y en este punto no es igual al Optional
+           return ResponseEntity.ok(toResponse(product));
     }
 
     @PostMapping()
@@ -62,15 +64,28 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity <ProductResponse> update(@PathVariable Long id, @Valid @RequestBody ProductRequest product){
-        Optional<Product> optional = service.update(
+    public ResponseEntity <ProductResponse> update(@PathVariable Long id, @Valid @RequestBody ProductRequest productUpdate){
+        Product product = service.update(
+            id, toEntity(productUpdate),
+            productUpdate.categoryId()
+        );
+        return ResponseEntity.ok(toResponse(product));
+        /*Product product = service.update(
             id, toEntity(product),
             product.categoryId()
         );
-        if (optional.isPresent()){
-            return ResponseEntity.status(HttpStatus.OK).body(toResponse(optional.get()));
-        }
-        return ResponseEntity.notFound().build();
+       
+       return ResponseEntity.ok(toResponse(product));*/
+    }
+
+    @PutMapping("/{id}/modifier")
+    public ResponseEntity <ProductResponse> modifier(@PathVariable Long id, @Valid @RequestBody ProductCambioRequest productModifier){
+        Product product = service.modifier(
+            id,
+            productModifier.getPalabra(),
+            productModifier.getStock()
+        );
+        return ResponseEntity.ok(toResponse(product));
     }
 
     private ProductResponse toResponse(Product product){

@@ -4,11 +4,15 @@ import mx.edu.utez.productos.model.Product;
 import mx.edu.utez.productos.repository.ProductRepository;
 
 import mx.edu.utez.productos.repository.CategoryRepository;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+import mx.edu.utez.productos.exception.InsuficienteStockException;
 import mx.edu.utez.productos.exception.ResoureceNotFoundException;
 import mx.edu.utez.productos.model.Category;;
 
@@ -40,9 +44,7 @@ public class ProductService {
         return repo.save(product); 
     }
 
-    public Optional<Product> update(Long id, Product product, Long categoryId){
-
-
+    public Product update(Long id, Product product, Long categoryId){
 
         Product productDb = repo.findById(id).orElseThrow(
             ()->
@@ -61,7 +63,26 @@ public class ProductService {
         productDb.setStock(product.getStock());
         productDb.setCategory(category);
 
-        return Optional.of(repo.save(productDb));
+        return repo.save(productDb);
+    }
+
+    public Product modifier(Long id, String palabra, int stock){
+        Product productDb = repo.findById(id).orElseThrow(
+            ()->
+            new ResoureceNotFoundException("Product not found with id: " + id)
+        );
+        if ("add".equalsIgnoreCase(palabra)) {
+            productDb.setStock(productDb.getStock() + stock);
+        } else if ("remove".equalsIgnoreCase(palabra)) {
+            if (stock > productDb.getStock()) {
+                throw new InsuficienteStockException("El stock no es suficiente para quitar más");
+                //throw new ResoureceNotFoundException("El stock no es suficiente para el id" + id );
+            }
+            productDb.setStock(productDb.getStock()-stock);
+        }else{
+            throw new ResoureceNotFoundException("No se encontro la palabra");
+        }
+        return repo.save(productDb);
     }
 
     public boolean delete(Long id){
