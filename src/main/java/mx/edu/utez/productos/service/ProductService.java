@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import mx.edu.utez.productos.exception.ResoureceNotFoundException;
 import mx.edu.utez.productos.model.Category;;
 
 @Service 
@@ -29,22 +31,35 @@ public class ProductService {
     }
 
     public Product save(Product product, Long categoryId){
-        Category category = repoCategory.findById(categoryId).orElseThrow();//Brujeria paira arrojar un error, cuando no encuentre un optional para categoty
+        Category category = repoCategory.findById(categoryId).orElseThrow(
+            ()->
+            new ResoureceNotFoundException("Category not found with id: " +categoryId)
+        );//Brujeria para arrojar un error, cuando no encuentre un optional para categoty
         //entonces arroja un error, evitando que el producto se cree
         product.setCategory(category);
         return repo.save(product); 
     }
 
-    public Optional<Product> update(Long id, Product product){
-        Optional<Product> optional = repo.findById(id);
-        if (optional.isEmpty()){
-            return optional.empty();
-        }
-        Product productDb = optional.get();
+    public Optional<Product> update(Long id, Product product, Long categoryId){
+
+
+
+        Product productDb = repo.findById(id).orElseThrow(
+            ()->
+            new ResoureceNotFoundException("Product Not Found with id" +id)
+        );
+
+        Category category = repoCategory.findById(categoryId).orElseThrow(
+            ()->
+            new ResoureceNotFoundException("Category not found with id: " + categoryId)
+        );
+
+        //Product productDb = optional.get();
 
         productDb.setName(product.getName());
         productDb.setPrice(product.getPrice());
         productDb.setStock(product.getStock());
+        productDb.setCategory(category);
 
         return Optional.of(repo.save(productDb));
     }
