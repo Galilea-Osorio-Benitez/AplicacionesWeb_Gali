@@ -38,7 +38,7 @@ public class ProductService {
         Category category = repoCategory.findById(categoryId).orElseThrow(
             ()->
             new ResoureceNotFoundException("Category not found with id: " +categoryId)
-        );//Brujeria para arrojar un error, cuando no encuentre un optional para categoty
+        );//Brujeria para arrojar un error, cuando no encuentre un optional para category
         //entonces arroja un error, evitando que el producto se cree
         product.setCategory(category);
         return repo.save(product); 
@@ -68,8 +68,8 @@ public class ProductService {
 
     public Product modifier(Long id, String palabra, int stock){
         Product productDb = repo.findById(id).orElseThrow(
-            ()->
-            new ResoureceNotFoundException("Product not found with id: " + id)
+                ()->
+                        new ResoureceNotFoundException("Product not found with id: " + id)
         );
         if ("add".equalsIgnoreCase(palabra)) {
             productDb.setStock(productDb.getStock() + stock);

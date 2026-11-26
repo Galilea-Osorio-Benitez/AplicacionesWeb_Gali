@@ -81,9 +81,9 @@ public class ProductController {
     @PutMapping("/{id}/modifier")
     public ResponseEntity <ProductResponse> modifier(@PathVariable Long id, @Valid @RequestBody ProductCambioRequest productModifier){
         Product product = service.modifier(
-            id,
-            productModifier.getPalabra(),
-            productModifier.getStock()
+                id,
+                productModifier.getPalabra(),
+                productModifier.getStock()
         );
         return ResponseEntity.ok(toResponse(product));
     }
